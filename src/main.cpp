@@ -3,21 +3,20 @@
 #include <ESP8266WiFi.h>
 #include <WiFiClientSecure.h>
 #include <WiFiUdp.h>
-#include <ArduinoOTA.h>
 #include <UniversalTelegramBot.h>
-
-#define BOT_TOKEN "5776848893:AAF1RwHhN8XctsWf8R-OJAmIPZKvjAQsnqE"
-
-String ssid = "Ged-IOT";
-String pass = "IOT@pass22";
+#include <ArduinoJson.h>
+#include <env.h>
 
 // LD2410 ld2410;
 
 const unsigned long BOT_MTBS = 1000; // mean time between scan messages
 
+X509List cert(TELEGRAM_CERTIFICATE_ROOT);
 WiFiClientSecure secured_client;
 UniversalTelegramBot bot(BOT_TOKEN, secured_client);
+
 unsigned long bot_lasttime; // last time messages' scan has been done
+
 bool Start = false;
 
 void handleNewMessages(int numNewMessages)
@@ -69,7 +68,8 @@ void setup()
 
   // Connect wifi
   WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, pass);
+  WiFi.begin(WIFI_SSD, WIFI_PASS);
+  secured_client.setTrustAnchors(&cert);
 
   while (WiFi.waitForConnectResult() != WL_CONNECTED)
   {
@@ -77,11 +77,16 @@ void setup()
     ESP.restart();
   }
 
+  Serial.println("Connected!");
+  Serial.print("Local IP: ");
+  Serial.println(WiFi.localIP());
+  
   // Setup OTA
-  ArduinoOTA.begin();
+  // ArduinoOTA.begin();
   Serial.println("Ready");
 
   // Configure Time
+  Serial.print("Retrieving time: ");
   configTime(0, 0, "pool.ntp.org"); // get UTC time via NTP
   time_t now = time(nullptr);
   while (now < 24 * 3600)
@@ -96,7 +101,6 @@ void setup()
 
 void loop()
 {
-  ArduinoOTA.handle();
   // const int max_line_length = 80;
   // static char buffer[max_line_length];
 

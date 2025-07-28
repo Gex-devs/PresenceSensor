@@ -39,6 +39,10 @@ public:
 
     long lastPeriodicMillis = millis();
 
+    void init()
+    {
+        Serial.begin(256000);
+    }
     void setNumbers(float *maxMovingDistanceRange_, float *maxStillDistanceRange_, float *noneDuration_)
     {
 
